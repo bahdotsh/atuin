@@ -1,4 +1,4 @@
-use std::io::{stderr, IsTerminal as _};
+use std::io::{IsTerminal as _, stderr};
 
 use atuin_common::utils::{self, Escapable as _};
 use clap::Parser;
@@ -6,9 +6,9 @@ use eyre::Result;
 
 use atuin_client::{
     database::Database,
-    database::{current_context, OptFilters},
+    database::{OptFilters, current_context},
     encryption,
-    history::{store::HistoryStore, History},
+    history::{History, store::HistoryStore},
     record::sqlite_store::SqliteStore,
     settings::{FilterMode, KeymapMode, SearchMode, Settings, Timezone},
     theme::Theme,
@@ -127,6 +127,10 @@ pub struct Cmd {
     /// Set the maximum number of lines Atuin's interface should take up.
     #[arg(long = "inline-height")]
     inline_height: Option<u16>,
+
+    /// Include duplicate commands in the output (non-interactive only)
+    #[arg(long)]
+    include_duplicates: bool,
 }
 
 impl Cmd {
@@ -164,17 +168,19 @@ impl Cmd {
             // when running the equivalent search, but deleting those entries that are
             // displayed with the search would leave any duplicates of those lines which may
             // or may not have been intended to be deleted.
-            println!("\"--limit\" is not compatible with deletion.");
+            eprintln!("\"--limit\" is not compatible with deletion.");
             return Ok(());
         }
 
         if self.delete && query.is_empty() {
-            println!("Please specify a query to match the items you wish to delete. If you wish to delete all history, pass --delete-it-all");
+            eprintln!(
+                "Please specify a query to match the items you wish to delete. If you wish to delete all history, pass --delete-it-all"
+            );
             return Ok(());
         }
 
         if self.delete_it_all && !query.is_empty() {
-            println!(
+            eprintln!(
                 "--delete-it-all will delete ALL of your history! It does not require a query."
             );
             return Ok(());
@@ -223,6 +229,7 @@ impl Cmd {
                 limit: self.limit,
                 offset: self.offset,
                 reverse: self.reverse,
+                include_duplicates: self.include_duplicates,
             };
 
             let mut entries =
@@ -271,7 +278,7 @@ impl Cmd {
                     tz,
                 );
             }
-        };
+        }
         Ok(())
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "atuin-server-database"
-edition = "2021"
+edition = "2024"
 description = "server database library for atuin"
 
 version = { workspace = true }
@@ -10,7 +10,7 @@ homepage = { workspace = true }
 repository = { workspace = true }
 
 [dependencies]
-atuin-common = { path = "../atuin-common", version = "18.4.0" }
+atuin-common = { path = "../atuin-common", version = "18.5.0" }
 
 tracing = { workspace = true }
 time = { workspace = true }
